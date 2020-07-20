@@ -4,6 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class ApiClient {
+
     companion object {
         var retrofit: Retrofit? = null
         val baseurl = "https://maps.googleapis.com/maps/api/place/nearbysearch/"

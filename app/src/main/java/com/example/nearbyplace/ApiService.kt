@@ -12,5 +12,5 @@ interface NearbyApi {
         @Query("radius") radius: String?,
         @Query("types") type: String?,
         @Query("key") key: String?
-    ): Call<NearByPlace?>?
+    ): Call<NearByPlace>
 }

@@ -1,12 +1,15 @@
 package com.example.nearbyplace.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nearbyplace.ApiClient
 import com.example.nearbyplace.NearbyApi
 import com.example.nearbyplace.R
 import com.example.nearbyplace.model.NearByPlace
+import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -23,11 +26,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        btn_move.setOnClickListener {
+            val intent = Intent(this@MainActivity, MapsActivity::class.java)
+            startActivity(intent);
+        }
 
         val nearbyApi: NearbyApi = ApiClient.getClient()!!.create(NearbyApi::class.java)
-        val call: Call<NearByPlace?>? =
+        val call: Call<NearByPlace> =
             nearbyApi.getDetails(loc, radius, type, key)
-        call?.enqueue(object : Callback<NearByPlace> {
+        call.enqueue(object : Callback<NearByPlace> {
             override fun onResponse(
                 call: Call<NearByPlace>,
                 response: Response<NearByPlace>
