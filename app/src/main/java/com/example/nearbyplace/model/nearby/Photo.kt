@@ -1,4 +1,4 @@
-package com.example.nearbyplace.model
+package com.example.nearbyplace.model.nearby
 
 
 import com.google.gson.annotations.SerializedName

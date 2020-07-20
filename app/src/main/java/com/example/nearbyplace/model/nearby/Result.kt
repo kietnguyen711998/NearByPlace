@@ -1,5 +1,9 @@
-package com.example.nearbyplace.model
+package com.example.nearbyplace.model.nearby
 
+import com.example.nearbyplace.model.nearby.Geometry
+import com.example.nearbyplace.model.nearby.OpeningHours
+import com.example.nearbyplace.model.nearby.Photo
+import com.example.nearbyplace.model.nearby.PlusCode
 import com.google.gson.annotations.SerializedName
 
 data class Result(

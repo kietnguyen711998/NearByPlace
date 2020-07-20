@@ -7,7 +7,7 @@ class ApiClient {
 
     companion object {
         var retrofit: Retrofit? = null
-        val baseurl = "https://maps.googleapis.com/maps/api/place/nearbysearch/"
+        val baseurl = "https://maps.googleapis.com/maps/api/"
         fun getClient(): Retrofit? {
             if (retrofit == null) {
                 retrofit = Retrofit.Builder().baseUrl(baseurl)

@@ -1,9 +1,9 @@
-package com.example.nearbyplace.model
+package com.example.nearbyplace.model.directions
 
 
 import com.google.gson.annotations.SerializedName
 
-data class Southwest(
+data class StartLocation(
     @SerializedName("lat")
     var lat: Double,
     @SerializedName("lng")
