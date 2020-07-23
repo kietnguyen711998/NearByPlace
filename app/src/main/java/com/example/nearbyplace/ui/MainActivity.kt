@@ -9,10 +9,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-    var loc = "16.068264,108.214405"
-    var radius = "10000"
-    var type = "school"
-    var key = "AIzaSyDtxS6znDp9TzYPYdV8XwptR-ARnFHKRCs"
 
     private val nearByPlace = mutableListOf<NearByPlace>()
 
@@ -21,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         btnRestaurents.setOnClickListener {
             val intent = Intent(this@MainActivity, MapsActivity::class.java)
-            //intent.putExtra("keys", "restaurent")
+            intent.putExtra("keys", "restaurant")
             startActivity(intent);
         }
 
@@ -42,6 +38,7 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("keys", "school")
             startActivity(intent);
         }
+
 
     }
 }

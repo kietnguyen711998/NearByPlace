@@ -1,5 +1,6 @@
 package com.example.nearbyplace
 
+import com.example.nearbyplace.model.directions.Direction
 import com.example.nearbyplace.model.directions.DirectionResults
 import com.example.nearbyplace.model.nearby.NearByPlace
 import retrofit2.Call
@@ -21,5 +22,5 @@ interface NearbyApi {
         @Query("destination") destination: String?,
         @Query("waypoints") wayPoints: String?,
         @Query("key") key: String?
-    ): Call<DirectionResults>
+    ): Call<Direction>
 }
