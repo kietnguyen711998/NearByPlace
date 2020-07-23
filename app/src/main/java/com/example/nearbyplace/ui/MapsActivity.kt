@@ -249,22 +249,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val intent = getIntent()
             keys = intent.getStringExtra("keys")
 //            keys?.let { showNearbyPlaces(it) }
-            val markerOptions = MarkerOptions()
-            if (this.keys.equals("hotel")) {
-                markerOptions.icon(bitmapDescriptorFromVector(this, R.drawable.ic_hotel))
-                Log.d(TAG, "showNearbyPlaces: " + "hotel")
-            } else if (this.keys.equals("hospital")) {
-                markerOptions.icon(bitmapDescriptorFromVector(this, R.drawable.ic_hospital))
-                Log.d(TAG, "showNearbyPlaces: " + "hospital")
-            } else if (this.keys.equals("restaurant")) {
-                markerOptions.icon(bitmapDescriptorFromVector(this, R.drawable.ic_restaurant))
-                Log.d(TAG, "showNearbyPlaces: " + "restaurant")
-            } else if (this.keys.equals("school")) {
-                markerOptions.icon(bitmapDescriptorFromVector(this, R.drawable.ic_school))
-                Log.d(TAG, "showNearbyPlaces: " + "school")
-            } else {
-                Log.d(TAG, "showNearbyPlaces: " + "Dont show")
-            }
             val lng = mLastLocation?.longitude
             val lat = mLastLocation?.latitude
             val slng = lng?.let { java.lang.Double.toString(it) }
@@ -273,6 +257,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val radius = "10000"
             var type: String? = keys
 //            var type = "hotel"
+            var photoreference = ""
+            val sensor = "false"
+            var maxheight = ""
+            var maxwidth = ""
 
             val key = "AIzaSyDtxS6znDp9TzYPYdV8XwptR-ARnFHKRCs"
             val nearbyApi: NearbyApi = ApiClient.getClient()!!.create(NearbyApi::class.java)
@@ -289,6 +277,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                     mMap?.clear()
                     // This loop will go through all the results and add marker on each location.
                     for (i in response.body()?.results?.indices!!) {
+                        val callimg: Call<NearByPlace> =
+                            nearbyApi.getDetailsPhoto(
+                                photoreference,
+                                sensor,
+                                maxheight,
+                                maxwidth,
+                                key
+                            )
+                        callimg.enqueue(object : Callback<NearByPlace> {
+                            override fun onResponse(
+                                call: Call<NearByPlace>,
+                                response: Response<NearByPlace>
+                            ) {
+                                val photoreference = response.body()?.results?.get(i)?.photos?.get(i)?.photoReference
+                                val maxheight = response.body()?.results?.get(i)?.photos?.get(i)?.height
+                                val maxwidth = response.body()?.results?.get(i)?.photos?.get(i)?.width
+                            }
+
+                            override fun onFailure(call: Call<NearByPlace>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+                        })
+
+
+
                         val lat = response.body()?.results?.get(i)?.geometry?.location?.lat
                         val lng = response.body()?.results?.get(i)?.geometry?.location?.lng
                         latlocatinon1 = lat
@@ -305,18 +318,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                         }
                         // Adding Title to the Marker
                         markerOptions.title("$placeName : $vicinity")
-                        // Adding colour to the marker
-                        markerOptions.icon(
-                            BitmapDescriptorFactory.defaultMarker(
-                                BitmapDescriptorFactory.HUE_RED
+                        when (vicinity) {
+                            "hotel" -> markerOptions.icon(
+                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_hotel)
                             )
-                        )
+                            "hospital" -> markerOptions.icon(
+                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_hospital)
+                            )
+                            "restaurant" -> markerOptions.icon(
+                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_restaurant)
+                            )
+                            "school" -> markerOptions.icon(
+                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_school)
+                            )
+                            else -> markerOptions.icon(
+                                BitmapDescriptorFactory.defaultMarker(
+                                    BitmapDescriptorFactory.HUE_AZURE
+                                )
+                            )
+                        }
+                        // Adding colour to the marker
                         // Adding Marker to the Camera.
                         val m = mMap?.addMarker(markerOptions)
                         // move map camera
                         mMap?.moveCamera(CameraUpdateFactory.newLatLng(latLng))
                         mMap?.animateCamera(CameraUpdateFactory.zoomTo(16f))
-
                     }
                 }
 
@@ -385,7 +411,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
         return ContextCompat.getDrawable(context, vectorResId)?.run {
             setBounds(0, 0, intrinsicWidth, intrinsicHeight)
-            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val bitmap =
+                Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
             draw(Canvas(bitmap))
             BitmapDescriptorFactory.fromBitmap(bitmap)
         }
@@ -455,6 +482,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     companion object {
         const val MY_PERMISSIONS_REQUEST_LOCATION = 99
         private const val TAG = "MapsActivity"
+
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
