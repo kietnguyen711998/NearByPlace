@@ -268,6 +268,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             var maxwidth = 1340
 
             val key = "AIzaSyDtxS6znDp9TzYPYdV8XwptR-ARnFHKRCs"
+            var listimg:MutableList<String> = mutableListOf()
+
             val nearbyApi: NearbyApi = ApiClient.getClient()!!.create(NearbyApi::class.java)
             val call: Call<NearByPlace> =
                 nearbyApi.getDetails(location, radius, type.toString(), key)
@@ -307,7 +309,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                             var Baseurl =
                                 "https://maps.googleapis.com/maps/api/place/photo?photoreference=$photoreference&sensor=$sensor&maxheight=$maxheight&maxwidth=$maxwidth&key=$key"
                             Log.d("ccc", "onResponse: "+Baseurl.toString())
-
+                            listimg.addAll(listOf(Baseurl))
+                            Log.d("check", "onResponse: "+listimg.size)
                             val lat = response.body()?.results?.get(i)?.geometry?.location?.lat
                             val lng = response.body()?.results?.get(i)?.geometry?.location?.lng
                             latlocatinon1 = lat
@@ -322,7 +325,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                             //place2 = latLng?.let { MarkerOptions().position(it) }
                             // Position of Marker on Map
                             if (latLng != null) {
+
                                 markerOptions.position(latLng)
+                                Log.d("posi", "onResponse: "+ markerOptions.position)
                             }
                             // Adding Title to the Marker
                             markerOptions.title("$placeName : $vicinity")
