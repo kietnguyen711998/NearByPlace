@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.example.nearbyplace.ApiClient
 import com.example.nearbyplace.NearbyApi
 import com.example.nearbyplace.R
@@ -29,7 +30,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_maps.*
+import okhttp3.ResponseBody
 import org.w3c.dom.UserDataHandler
 import retrofit2.Call
 import retrofit2.Callback
@@ -99,7 +102,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mMap!!.setOnMapLongClickListener(this)
+        mMap?.setOnMapLongClickListener(this)
+//        mMap?.setOnMarkerClickListener(this)
         geocoder = Geocoder(this)
         mLocationRequest = LocationRequest()
         mLocationRequest?.interval = 120000 // two minute interval
@@ -256,93 +260,112 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             val location = "$slat,$slng"
             val radius = "10000"
             var type: String? = keys
-//            var type = "hotel"
-            var photoreference = ""
+            //var type = "hotel"
+            var photoreference =
+                "CmRaAAAAd5d7SdYV_G1PWnuTWIhI4gfnvjhGoVlu229ld6Ss9_qGLouiaJpLF06ARhSrdmDjCggPwUDiYAuwe2_50eu6YABgGfrGi7-ktubccpH9gFk39F5Zma-MrLsrli_tudffEhDI5K6D8FrmRKvHkgJIaKQuGhTqOWtokckdCap8cNlLHvElsBeZlg"
             val sensor = "false"
-            var maxheight = ""
-            var maxwidth = ""
+            var maxheight = 2009
+            var maxwidth = 1340
 
             val key = "AIzaSyDtxS6znDp9TzYPYdV8XwptR-ARnFHKRCs"
             val nearbyApi: NearbyApi = ApiClient.getClient()!!.create(NearbyApi::class.java)
             val call: Call<NearByPlace> =
                 nearbyApi.getDetails(location, radius, type.toString(), key)
+
             call.enqueue(object : Callback<NearByPlace> {
                 override fun onResponse(
                     call: Call<NearByPlace>,
                     response: Response<NearByPlace>
                 ) {
-                    Log.d("Res123", response.body()?.results?.get(0)?.name ?: "")
-                    Log.d("Res123", response.body()?.results?.get(0)?.id ?: "")
-                    Log.d("Res123", response.body()?.results?.get(0)?.vicinity ?: "")
                     mMap?.clear()
                     // This loop will go through all the results and add marker on each location.
+                    getimg
                     for (i in response.body()?.results?.indices!!) {
-                        val callimg: Call<NearByPlace> =
-                            nearbyApi.getDetailsPhoto(
-                                photoreference,
-                                sensor,
-                                maxheight,
-                                maxwidth,
-                                key
+
+                        if (response!!.body()!!.results[i].photos != null) {
+
+                            Log.d(
+                                "abc",
+                                "onResponse: " + response!!.body()!!.results[i].photos[0].photoReference
                             )
-                        callimg.enqueue(object : Callback<NearByPlace> {
-                            override fun onResponse(
-                                call: Call<NearByPlace>,
-                                response: Response<NearByPlace>
-                            ) {
-                                val photoreference = response.body()?.results?.get(i)?.photos?.get(i)?.photoReference
-                                val maxheight = response.body()?.results?.get(i)?.photos?.get(i)?.height
-                                val maxwidth = response.body()?.results?.get(i)?.photos?.get(i)?.width
+                            photoreference = response!!.body()!!.results[i].photos[0].photoReference
+                            Log.d(
+                                "abc",
+                                "onResponse: " + response!!.body()!!.results[i].photos[0].height
+                            )
+                            maxheight = response!!.body()!!.results[i].photos[0].height
+                            Log.d(
+                                "abc",
+                                "onResponse: " + response!!.body()!!.results[i].photos[0].width
+                            )
+                            maxwidth = response!!.body()!!.results[i].photos[0].width
+                            Log.d(
+                                TAG,
+                                "onResponse: $photoreference ___ $maxheight ____ $maxwidth"
+                            )
+
+                            var Baseurl =
+                                "https://maps.googleapis.com/maps/api/place/photo?photoreference=$photoreference&sensor=$sensor&maxheight=$maxheight&maxwidth=$maxwidth&key=$key"
+                            Log.d("ccc", "onResponse: "+Baseurl.toString())
+
+                            val lat = response.body()?.results?.get(i)?.geometry?.location?.lat
+                            val lng = response.body()?.results?.get(i)?.geometry?.location?.lng
+                            latlocatinon1 = lat
+                            lnglocatinon1 = lng
+                            val placeName = response.body()?.results?.get(i)?.name
+                            val type = response.body()?.results?.get(i)?.types
+
+                            namePlace2 = placeName
+                            val vicinity = response.body()?.results?.get(i)?.vicinity
+                            val markerOptions = MarkerOptions()
+                            val latLng = lat?.let { lng?.let { it1 -> LatLng(it, it1) } }
+                            //place2 = latLng?.let { MarkerOptions().position(it) }
+                            // Position of Marker on Map
+                            if (latLng != null) {
+                                markerOptions.position(latLng)
                             }
-
-                            override fun onFailure(call: Call<NearByPlace>, t: Throwable) {
-                                TODO("Not yet implemented")
-                            }
-                        })
-
-
-
-                        val lat = response.body()?.results?.get(i)?.geometry?.location?.lat
-                        val lng = response.body()?.results?.get(i)?.geometry?.location?.lng
-                        latlocatinon1 = lat
-                        lnglocatinon1 = lng
-                        val placeName = response.body()?.results?.get(i)?.name
-                        namePlace2 = placeName
-                        val vicinity = response.body()?.results?.get(i)?.vicinity
-                        val markerOptions = MarkerOptions()
-                        val latLng = lat?.let { lng?.let { it1 -> LatLng(it, it1) } }
-                        //place2 = latLng?.let { MarkerOptions().position(it) }
-                        // Position of Marker on Map
-                        if (latLng != null) {
-                            markerOptions.position(latLng)
-                        }
-                        // Adding Title to the Marker
-                        markerOptions.title("$placeName : $vicinity")
-                        when (vicinity) {
-                            "hotel" -> markerOptions.icon(
-                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_hotel)
-                            )
-                            "hospital" -> markerOptions.icon(
-                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_hospital)
-                            )
-                            "restaurant" -> markerOptions.icon(
-                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_restaurant)
-                            )
-                            "school" -> markerOptions.icon(
-                                bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_school)
-                            )
-                            else -> markerOptions.icon(
-                                BitmapDescriptorFactory.defaultMarker(
-                                    BitmapDescriptorFactory.HUE_AZURE
+                            // Adding Title to the Marker
+                            markerOptions.title("$placeName : $vicinity")
+                            when (placeName) {
+                                "hotel" -> markerOptions.icon(
+                                    bitmapDescriptorFromVector(
+                                        this@MapsActivity,
+                                        R.drawable.ic_hotel
+                                    )
                                 )
-                            )
+                                "hospital" -> markerOptions.icon(
+                                    //bitmapDescriptorFromVector(this@MapsActivity, R.drawable.ic_hospital)
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_ORANGE
+                                    )
+                                )
+                                "restaurant" -> markerOptions.icon(
+                                    bitmapDescriptorFromVector(
+                                        this@MapsActivity,
+                                        R.drawable.ic_restaurant
+                                    )
+                                )
+                                "school" -> markerOptions.icon(
+                                    bitmapDescriptorFromVector(
+                                        this@MapsActivity,
+                                        R.drawable.ic_school
+                                    )
+                                )
+                                else -> markerOptions.icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_AZURE
+                                    )
+                                )
+                            }
+                            // Adding colour to the marker
+                            // Adding Marker to the Camera.
+                            val m = mMap?.addMarker(markerOptions)
+                            Glide.with(this@MapsActivity).load(Baseurl).into(imgtest1)
+
+                            // move map camera
+                            mMap?.moveCamera(CameraUpdateFactory.newLatLng(latLng))
+                            mMap?.animateCamera(CameraUpdateFactory.zoomTo(16f))
                         }
-                        // Adding colour to the marker
-                        // Adding Marker to the Camera.
-                        val m = mMap?.addMarker(markerOptions)
-                        // move map camera
-                        mMap?.moveCamera(CameraUpdateFactory.newLatLng(latLng))
-                        mMap?.animateCamera(CameraUpdateFactory.zoomTo(16f))
                     }
                 }
 
@@ -351,6 +374,47 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                     t: Throwable
                 ) {
                     Log.e("Response111", "Failure")
+
+                }
+            })
+        }
+
+    private val getimg: Unit
+        private get() {
+            val nearbyApi: NearbyApi = ApiClient.getClient()!!.create(NearbyApi::class.java)
+            var photoreference =
+                "CmRaAAAAJrUDOVqbvDZwINoFOOF57ZOOf9etznYucySeqHyLQcSs0Ray3fSkX8jIqLA0Ra5IU_Kn8l7rGMYcaeqIkftAj4zoZQ2WIebv_AQJDiYwTFo6bXud2KoAKSiVAzThlKxyEhBAacZSlAZMWgRJj0ppYo4bGhQcXTz1Y9q660rAQEwb9XVhOrYQ5Q"
+            val sensor = "false"
+            var maxheight = 2340
+            var maxwidth = 4160
+
+            val key = "AIzaSyDtxS6znDp9TzYPYdV8XwptR-ARnFHKRCs"
+            val callimg: Call<ResponseBody> =
+                nearbyApi.getDetailsPhoto(
+                    photoreference,
+                    sensor,
+                    maxheight,
+                    maxwidth,
+                    key
+                )
+            callimg.enqueue(object : Callback<ResponseBody> {
+                override fun onResponse(
+                    call: Call<ResponseBody>,
+                    response: Response<ResponseBody>
+                ) {
+//                                        Log.d("TAG", "onResponse1: " + photoreference)
+//                                        Log.d("TAG", "onResponse1: " + maxheight)
+//                                        Log.d("TAG", "onResponse1: " + maxwidth)
+
+
+                    Log.d("TAG1", "onResponse: " + response.body().toString())
+                    Log.d("TAG1", "onResponse: " + maxheight)
+
+
+                }
+
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    Log.d("TAG", "onFailure: ")
                 }
             })
         }
@@ -397,6 +461,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                     response: Response<Direction>
                 ) {
                     response.body()?.toString()?.let { Log.d("Res12345", it) }
+
                     //val lat = response.body()?.routes?.get(0)?.geometry?.location?.lat
                     //mMap?.clear()
 
@@ -483,15 +548,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         const val MY_PERMISSIONS_REQUEST_LOCATION = 99
         private const val TAG = "MapsActivity"
 
+
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
-//        var lat = p0?.position?.latitude
-//        var lng= p0?.position?.longitude
+        var lat = p0?.position?.latitude
+        var lng= p0?.position?.longitude
 
         //var latPlace2 =lat
         //var lngPlace2 =lng
-
+        Toast.makeText(this, "bbb", Toast.LENGTH_SHORT).show()
+        Log.d("bbb", "onMarkerClick: "+lat + ""+lng)
         return true
     }
 }

@@ -2,7 +2,10 @@ package com.example.nearbyplace
 
 import com.example.nearbyplace.model.directions.Direction
 import com.example.nearbyplace.model.nearby.NearByPlace
+import com.example.nearbyplace.model.nearby.Photo
+import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -21,10 +24,10 @@ interface NearbyApi {
     fun getDetailsPhoto(
         @Query("photoreference") photoreference: String?,
         @Query("sensor") sensor: String?,
-        @Query("maxheight") maxheight: String,
-        @Query("maxwidth") maxwidth: String,
+        @Query("maxheight") maxheight: Int,
+        @Query("maxwidth") maxwidth: Int,
         @Query("key") key: String?
-    ): Call<NearByPlace>
+    ): Call<ResponseBody>
 //directions/json?origin=36 Bạch Đằng, Thạch Thang, Q. Hải Châu, Đà Nẵng 551291, Việt Nam&destination=Số 02 Đ. 2 Tháng 9, Bình Hiên, Hải Châu, Đà Nẵng 550000, Việt Nam&waypoints=via:16.077329,108.22367|via:16.060475,108.223349&key=AIzaSyDtxS6znDp9TzYPYdV8XwptR-ARnFHKRCs
     @GET("directions/json")
     fun getDirectionWithWayPoints(
